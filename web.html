@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Guess The City</title>
+<style>
+body {
+    background:#0f172a;
+    color:white;
+    font-family: Arial;
+    text-align:center;
+}
+button {
+    padding:10px;
+    margin:10px;
+    width:200px;
+    cursor:pointer;
+}
+.hidden { display:none; }
+input {
+    padding:10px;
+    font-size:16px;
+}
+</style>
+</head>
+
+<body>
+
+<h1>🌍 GUESS THE CITY</h1>
+
+<div id="start">
+    <input id="name" placeholder="Enter Name"><br>
+    <button onclick="startGame()">Start Game</button>
+    <button onclick="showLeaderboard()">Leaderboard</button>
+</div>
+
+<div id="game" class="hidden">
+    <h2 id="clue"></h2>
+    <input id="answer"><br>
+    <button onclick="submit()">Submit</button>
+</div>
+
+<div id="result" class="hidden"></div>
+
+<script>
+
+let l1 = [
+{city:"New York City",clue:"Manhattan is its core city."},
+{city:"London",clue:"The Royal city. Big Ben in here"},
+{city:"Tokyo",clue:"Most populated metropolitan city"},
+{city:"Singapore",clue:"Merlion statue"},
+{city:"Los Angeles",clue:"Hollywood"},
+{city:"Hong Kong",clue:"Rich Chinese city"},
+{city:"Paris",clue:"City of Love"},
+{city:"Dubai",clue:"Palm islands"},
+{city:"Shanghai",clue:"China finance hub"},
+{city:"Beijing",clue:"Capital of China"}
+];
+
+let l2 = [
+{city:"Zurich",clue:"Most expensive city"},
+{city:"Geneva",clue:"UN HQ"},
+{city:"San Francisco",clue:"Silicon Valley"},
+{city:"Sydney",clue:"Opera House"},
+{city:"Frankfurt",clue:"Germany finance hub"},
+{city:"Chicago",clue:"Pizza city"},
+{city:"Toronto",clue:"Canada finance"},
+{city:"Melbourne",clue:"Big cricket stadium"},
+{city:"Mumbai",clue:"7 islands"},
+{city:"Seoul",clue:"South Korea capital"}
+];
+
+function shuffle(arr){
+    return arr.sort(()=>Math.random()-0.5);
+}
+
+l1 = shuffle(l1);
+l2 = shuffle(l2);
+
+let level = 1;
+let index = 0;
+let score1 = 0;
+let score2 = 0;
+let username = "";
+
+function startGame(){
+    username = document.getElementById("name").value;
+
+    document.getElementById("start").classList.add("hidden");
+    document.getElementById("game").classList.remove("hidden");
+
+    showQuestion();
+}
+
+function showQuestion(){
+    let clue = document.getElementById("clue");
+
+    if(level===1){
+        if(index<l1.length){
+            clue.innerText = l1[index].clue;
+        } else {
+            checkLevel1();
+        }
+    }
+    else{
+        if(index<l2.length){
+            clue.innerText = l2[index].clue;
+        } else {
+            showResult();
+        }
+    }
+}
+
+function submit(){
+    let ans = document.getElementById("answer").value.toLowerCase();
+
+    if(level===1){
+        if(ans===l1[index].city.toLowerCase()) score1++;
+    } else {
+        if(ans===l2[index].city.toLowerCase()) score2++;
+    }
+
+    index++;
+    document.getElementById("answer").value="";
+    showQuestion();
+}
+
+function checkLevel1(){
+    if(score1<5){
+        document.getElementById("clue").innerText = "❌ Failed: "+score1+"/10";
+    } else {
+        alert("Qualified for Level 2 🔥");
+        level=2;
+        index=0;
+        showQuestion();
+    }
+}
+
+function showResult(){
+    let total = score1+score2;
+
+    document.getElementById("game").classList.add("hidden");
+
+    let div = document.getElementById("result");
+    div.classList.remove("hidden");
+
+    div.innerHTML = `
+        <h2>Final Score: ${total}/20</h2>
+        <button onclick="restart()">Restart</button>
+        <button onclick="showLeaderboard()">Leaderboard</button>
+    `;
+
+    saveScore(username,total);
+}
+
+function saveScore(name,score){
+    let data = JSON.parse(localStorage.getItem("scores")) || [];
+    data.push({name,score});
+    localStorage.setItem("scores", JSON.stringify(data));
+}
+
+function showLeaderboard(){
+    let data = JSON.parse(localStorage.getItem("scores")) || [];
+
+    data.sort((a,b)=>b.score-a.score);
+
+    let text = "🏆 Leaderboard\n\n";
+
+    data.slice(0,10).forEach(s=>{
+        text += s.name+" - "+s.score+"\n";
+    });
+
+    alert(text);
+}
+
+function restart(){
+    location.reload();
+}
+
+</script>
+
+</body>
+</html>
